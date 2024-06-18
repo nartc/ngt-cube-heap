@@ -85,7 +85,6 @@ export class InstancesInput {
   size = input(0.1);
   colors = input.required<Float32Array>();
 
-  test = injectBodyFn();
   body = injectBodyFn()(this.size);
 
   constructor() {
