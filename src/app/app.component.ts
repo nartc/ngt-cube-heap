@@ -1,17 +1,24 @@
 import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Experience } from "./experience";
 
 @Component({
   selector: "app-root",
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [Experience],
   template: `
-    <h1>Welcome to {{ title }}!</h1>
-
-    <router-outlet />
+    <app-experience />
+    <div class="text">* click to change shape</div>
   `,
-  styles: [],
+  styles: `
+    .text {
+      position: absolute;
+      left: 0.5rem;
+      top: 0.5rem;
+      font-family: monospace;
+      color: black;
+      font-weight: bold;
+      font-size: 1rem;
+    }
+  `,
 })
-export class AppComponent {
-  title = "ngt-cube-heap";
-}
+export class AppComponent {}
