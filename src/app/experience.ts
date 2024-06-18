@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   Directive,
-  InjectionToken,
+  Signal,
   computed,
   inject,
   input,
@@ -18,6 +18,7 @@ import {
   injectPlane,
   injectSphere,
 } from "angular-three-cannon/body";
+import { createNoopInjectionToken } from "ngxtension/create-injection-token";
 import {
   BoxGeometry,
   Color,
@@ -74,9 +75,10 @@ export class Plane {
   plane = injectPlane(() => ({ rotation: this.rotation() }));
 }
 
-const InjectBody = new InjectionToken<
-  (size: () => number) => NgtcBodyReturn<Object3D>
->("InjectBody");
+const [injectBodyFn, provideBodyFn] =
+  createNoopInjectionToken<(size: Signal<number>) => NgtcBodyReturn<Object3D>>(
+    "InjectBody",
+  );
 
 @Directive({ standalone: true })
 export class InstancesInput {
@@ -84,7 +86,7 @@ export class InstancesInput {
   size = input(0.1);
   colors = input.required<Float32Array>();
 
-  body = inject(InjectBody)(this.size);
+  body = injectBodyFn()(this.size);
 
   constructor() {
     injectBeforeRender(() => {
@@ -119,19 +121,13 @@ const instancesInputs = ["count", "size", "colors"];
   imports: [NgtArgs],
   hostDirectives: [{ directive: InstancesInput, inputs: instancesInputs }],
   providers: [
-    {
-      provide: InjectBody,
-      useValue: (size: () => number) =>
-        injectBox(() => ({
-          args: [size(), size(), size()],
-          mass: 1,
-          position: [
-            Math.random() - 0.5,
-            Math.random() * 2,
-            Math.random() - 0.5,
-          ],
-        })),
-    },
+    provideBodyFn((size) =>
+      injectBox(() => ({
+        args: [size(), size(), size()],
+        mass: 1,
+        position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
+      })),
+    ),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -162,19 +158,13 @@ export class Boxes {
   imports: [NgtArgs],
   hostDirectives: [{ directive: InstancesInput, inputs: instancesInputs }],
   providers: [
-    {
-      provide: InjectBody,
-      useValue: (size: () => number) =>
-        injectSphere(() => ({
-          args: [size()],
-          mass: 1,
-          position: [
-            Math.random() - 0.5,
-            Math.random() * 2,
-            Math.random() - 0.5,
-          ],
-        })),
-    },
+    provideBodyFn((size) =>
+      injectSphere(() => ({
+        args: [size()],
+        mass: 1,
+        position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
+      })),
+    ),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
