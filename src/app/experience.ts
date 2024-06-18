@@ -3,7 +3,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   Directive,
+  InjectionToken,
   computed,
+  inject,
   input,
   signal,
 } from "@angular/core";
@@ -72,13 +74,17 @@ export class Plane {
   plane = injectPlane(() => ({ rotation: this.rotation() }));
 }
 
-@Directive()
-export abstract class InstancesInput {
+const InjectBody = new InjectionToken<
+  (size: () => number) => NgtcBodyReturn<Object3D>
+>("InjectBody");
+
+@Directive({ standalone: true })
+export class InstancesInput {
   count = input(200);
   size = input(0.1);
   colors = input.required<Float32Array>();
 
-  abstract body: NgtcBodyReturn<Object3D>;
+  body = inject(InjectBody)(this.size);
 
   constructor() {
     injectBeforeRender(() => {
@@ -89,36 +95,49 @@ export abstract class InstancesInput {
   }
 }
 
+const instancesInputs = ["count", "size", "colors"];
+
 @Component({
   selector: "app-boxes",
   standalone: true,
   template: `
     <ngt-instanced-mesh
-      *args="[undefined, undefined, count()]"
+      *args="[undefined, undefined, inputs.count()]"
       [receiveShadow]="true"
       [castShadow]="true"
-      [ref]="body.ref"
+      [ref]="inputs.body.ref"
     >
-      <ngt-box-geometry *args="args()">
+      <ngt-box-geometry *args="[inputs.size(), inputs.size(), inputs.size()]">
         <ngt-instanced-buffer-attribute
           attach="attributes.color"
-          *args="[colors(), 3]"
+          *args="[inputs.colors(), 3]"
         />
       </ngt-box-geometry>
       <ngt-mesh-lambert-material [vertexColors]="true" />
     </ngt-instanced-mesh>
   `,
   imports: [NgtArgs],
+  hostDirectives: [{ directive: InstancesInput, inputs: instancesInputs }],
+  providers: [
+    {
+      provide: InjectBody,
+      useValue: (size: () => number) =>
+        injectBox(() => ({
+          args: [size(), size(), size()],
+          mass: 1,
+          position: [
+            Math.random() - 0.5,
+            Math.random() * 2,
+            Math.random() - 0.5,
+          ],
+        })),
+    },
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Boxes extends InstancesInput {
-  args = computed<Triplet>(() => [this.size(), this.size(), this.size()]);
-  body = injectBox(() => ({
-    args: this.args(),
-    mass: 1,
-    position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
-  }));
+export class Boxes {
+  inputs = inject(InstancesInput, { host: true });
 }
 
 @Component({
@@ -126,30 +145,42 @@ export class Boxes extends InstancesInput {
   standalone: true,
   template: `
     <ngt-instanced-mesh
-      *args="[undefined, undefined, count()]"
+      *args="[undefined, undefined, inputs.count()]"
       [receiveShadow]="true"
       [castShadow]="true"
-      [ref]="body.ref"
+      [ref]="inputs.body.ref"
     >
-      <ngt-sphere-geometry *args="[size(), 48, 48]">
+      <ngt-sphere-geometry *args="[inputs.size(), 48, 48]">
         <ngt-instanced-buffer-attribute
           attach="attributes.color"
-          *args="[colors(), 3]"
+          *args="[inputs.colors(), 3]"
         />
       </ngt-sphere-geometry>
       <ngt-mesh-lambert-material [vertexColors]="true" />
     </ngt-instanced-mesh>
   `,
   imports: [NgtArgs],
+  hostDirectives: [{ directive: InstancesInput, inputs: instancesInputs }],
+  providers: [
+    {
+      provide: InjectBody,
+      useValue: (size: () => number) =>
+        injectSphere(() => ({
+          args: [size()],
+          mass: 1,
+          position: [
+            Math.random() - 0.5,
+            Math.random() * 2,
+            Math.random() - 0.5,
+          ],
+        })),
+    },
+  ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Spheres extends InstancesInput {
-  body = injectSphere(() => ({
-    args: [this.size()],
-    mass: 1,
-    position: [Math.random() - 0.5, Math.random() * 2, Math.random() - 0.5],
-  }));
+export class Spheres {
+  inputs = inject(InstancesInput, { host: true });
 }
 
 @Component({
