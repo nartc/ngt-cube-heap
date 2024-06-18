@@ -22,7 +22,7 @@
     "angular-three-cannon": "^2.0.0-beta.232",
     "cannon-es": "^0.20.0",
     "cannon-es-debugger": "^1.0.0",
-    "ngxtension": "^3.5.2",
+    "ngxtension": "^3.5.5",
     "rxjs": "~7.8.0",
     "three": "^0.165.0",
     "tslib": "^2.3.0",

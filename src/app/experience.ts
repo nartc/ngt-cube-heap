@@ -75,10 +75,9 @@ export class Plane {
   plane = injectPlane(() => ({ rotation: this.rotation() }));
 }
 
-const [injectBodyFn, provideBodyFn] =
-  createNoopInjectionToken<(size: Signal<number>) => NgtcBodyReturn<Object3D>>(
-    "InjectBody",
-  );
+const [injectBodyFn, provideBodyFn] = createNoopInjectionToken<
+  (size: Signal<number>) => NgtcBodyReturn<Object3D>
+>("InjectBody", { isFunctionValue: true });
 
 @Directive({ standalone: true })
 export class InstancesInput {
@@ -86,6 +85,7 @@ export class InstancesInput {
   size = input(0.1);
   colors = input.required<Float32Array>();
 
+  test = injectBodyFn();
   body = injectBodyFn()(this.size);
 
   constructor() {
