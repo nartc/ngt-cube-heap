@@ -114,7 +114,6 @@ export abstract class InstancesInput {
 })
 export class Boxes extends InstancesInput {
   args = computed<Triplet>(() => [this.size(), this.size(), this.size()]);
-
   body = injectBox(() => ({
     args: this.args(),
     mass: 1,
@@ -146,8 +145,6 @@ export class Boxes extends InstancesInput {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Spheres extends InstancesInput {
-  args = computed<Triplet>(() => [this.size(), this.size(), this.size()]);
-
   body = injectSphere(() => ({
     args: [this.size()],
     mass: 1,
